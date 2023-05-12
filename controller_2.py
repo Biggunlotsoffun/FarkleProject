@@ -18,6 +18,7 @@ class Controller(QMainWindow, Ui_MainWindow):
         self.num_dice = 6
         self.num_dice_taken = 0
         self.selected_dice = []
+        self.place_holder = 0
 
         self.new_points = 0
         #self.new_points = self.point_check(self.new_roll(self.num_dice - self.num_dice_taken))
@@ -53,7 +54,7 @@ class Controller(QMainWindow, Ui_MainWindow):
         self.player8_score_label_2.setVisible(False)
         self.player9_score_label_2.setVisible(False)
         self.player10_score_label_2.setVisible(False)
-        self.score_label_list =[self.player1_score,self.player2_score_2, self.player3_score_label_2, self.player4_score_label_2, self.player5_score_2,self.player6_score_2, self.player6_score_2,self.player7_score_2,self.player8_score_2,self.player9_score_2, self.player10_score_2]
+        self.score_label_list =[self.player1_score,self.player2_score_2, self.player3_score_2, self.player4_score_2, self.player5_score_2,self.player6_score_2, self.player6_score_2,self.player7_score_2,self.player8_score_2,self.player9_score_2, self.player10_score_2]
         self.players_list = []
         self.rand_int_list = []
         self.player = 0
@@ -98,12 +99,19 @@ class Controller(QMainWindow, Ui_MainWindow):
 
     def bank_player_points(self):
         current_score = self.score_label_list[self.player].value()
-        new_score = current_score + self.temp
+        new_score = current_score + self.temp + self.button_clicked_temp
         self.score_label_list[self.player].display(new_score)
         self.temp = 0
-        self.start_round()
-        self.player += 1#(self.player + 1) % len(self.players_list)
+        #self.start_round()
+        self.player += 1 #(self.player + 1) % len(self.players_list)
+        if self.player >= len(self.players_list):
+            self.player = 0
         self.num_dice = 6
+        self.score_list.clear()
+        self.place_holder = 0
+        self.reset_dice()
+        self.start_round()
+
         # current_score = self.score_label_list[self.player].display(self.players_list[self.player])
         # new_score = current_score + self.temp
         # self.score_display.display(new_score)
@@ -163,15 +171,19 @@ class Controller(QMainWindow, Ui_MainWindow):
         self.dice4.setEnabled(True)
         self.dice5.setEnabled(True)
         self.dice6.setEnabled(True)
-        #self.score_list = []
+        self.button_clicked_temp = 0
+        self.score_list = []
 
     def button_clicked(self):
         button = self.sender()
         value = button.my_value
         button.setEnabled(False)
         self.score_list.append(value)
-
+        print(self.score_list)
         print(value)
+        self.button_clicked_temp = self.point_check(self.score_list)
+
+        #self.temp = self.point_check(self.score_list)
 
 
 
@@ -192,35 +204,44 @@ class Controller(QMainWindow, Ui_MainWindow):
     def submit_score(self):
         #self.temp += self.point_check(self.dice_roll)
         self.players_list[self.player] = self.temp
+        self.button_clicked_temp = 0
         num_dice = 6
+
         #num_dice = len(self.dice_roll)
         if len(self.score_list) < 6:
-            self.num_dice_taken = len(self.score_list)
+            self.place_holder += len(self.score_list)
+            self.num_dice_taken = self.place_holder #len(self.score_list)
             #num_dice = self.num_dice-self.num_dice_taken
             #self.new_roll(num_dice)
             #dice_roll_test = self.new_roll(num_dice)
             y = self.new_roll(self.num_dice-self.num_dice_taken)
             x = self.point_check(y)
-            self.temp += self.point_check(y)
+            #self.temp += self.point_check(y)
+            #self.button_clicked_temp = 0
+            self.temp += self.point_check(self.score_list)
             print(y)
             print(f"new score: {x}")
             self.score_goal.setText(f"points {x}")
 
             #print(f"new score: {x}")
-            #self.score_list.clear()
+            self.score_list.clear()
             if x ==0:
                 self.player += 1
                 if self.player >= len(self.players_list):
                     self.player = 0
                 self.score_list.clear()
                 self.num_dice = 6
-                self.start_round()
+                self.place_holder = 0
+                self.score_list.clear()
+                self.bank_player_points()
+                #self.start_round()
         else:
             self.num_dice_taken = len(self.score_list)
             #self.new_roll(num_dice - self.num_dice_taken)
             y = self.new_roll(6)
             x = self.point_check(y)
-            self.temp += self.point_check(y)
+            #self.temp += self.point_check(y)
+            self.temp += self.point_check(self.score_list)
             self.score_goal.setText(f"points {x}")
             #print(self.new_roll(num_dice - self.num_dice_taken))
             print(f"new score: {x}")
@@ -231,7 +252,10 @@ class Controller(QMainWindow, Ui_MainWindow):
                 if self.player >= len(self.players_list):
                     self.player = 0
                 self.num_dice =6
-                self.start_round()
+                self.place_holder= 0
+                self.score_list.clear()
+                self.bank_player_points()
+                #self.start_round()
             #self.score_list.clear()
 
     def enable_dice(self):
@@ -252,7 +276,9 @@ class Controller(QMainWindow, Ui_MainWindow):
         self.score_goal.setVisible(True)
         dice_roll = self.rand_int_list_generator(self.num_dice)
         self.display_dice(dice_roll)
-        self.player_header.setText(f"Player {self.player}'s turn")
+        x = self.point_check(dice_roll)
+        self.score_goal.setText(f"points {x}")
+        self.player_header.setText(f"Player {self.player + 1}'s turn")
 
     def display_dice(self, rand_int_list):
 
@@ -456,19 +482,29 @@ class Controller(QMainWindow, Ui_MainWindow):
         three_pair = self.three_pairs(dice_roll)[0]
         two_trips = self.two_triplets(dice_roll)[0]
         four_and_two = self.four_plus_pair(dice_roll)[0]
-        if four_and_two != 0:
+
+
+        if self.one_hundreds(dice_roll)[1] is True:
+            if ones < 300:
+                points += ones
+        if self.fifties(dice_roll)[1] is True:
+            if fifties < 150:
+                points += fifties
+        if self.four_plus_pair(dice_roll)[1] is True:
             points = four_and_two
-        elif two_trips != 0:
-            points= two_trips
-        elif three_pair != 0:
+            return points
+        if self.of_a_kind(dice_roll)[1] is True:
+            points += kind
+            return points
+        if self.two_triplets(dice_roll)[1] is True:
+            points = two_trips
+            return points
+        if self.three_pairs(dice_roll)[1] is True:
             points = three_pair
-        elif straight != 0:
+            return points
+        if self.straight(dice_roll)[1] is True:
             points = straight
-        elif kind != 0:
-            points = kind
-        else:
-            points = ones
-            points += fifties
+            return points
         return points #ones, fifties, kind, straight, three_pair, two_trips, four_and_two
 
     def num_players_selected(self, index):
