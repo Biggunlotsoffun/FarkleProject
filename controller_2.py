@@ -92,7 +92,12 @@ class Controller(QMainWindow, Ui_MainWindow):
         self.player_count.currentIndexChanged.connect(self.num_players_selected)
         self.submit_player_num.clicked.connect(self.lets_play)
 
-    def bank_player_points(self):
+    def bank_player_points(self) -> None:
+        """
+        stores saves the players points to the display. if the score cap is reached it disables the buttons
+        and accounces who won. also updates the player count and starts the round.
+        :return: None
+        """
         current_score = self.score_label_list[self.player].value()
         new_score = current_score + self.temp + self.button_clicked_temp
         self.score_label_list[self.player].display(new_score)
@@ -109,21 +114,18 @@ class Controller(QMainWindow, Ui_MainWindow):
         self.place_holder = 0
         self.reset_dice()
         self.start_round()
-        # else:
-        #     self.temp = 0
-        #     # self.player += 1
-        #     # if self.player >= len(self.players_list):
-        #     #     self.player = 0
-        #     self.num_dice = 6
-        #     self.score_list.clear()
-        #     self.place_holder = 0
-        #     self.reset_dice()
-        #     self.start_round()
 
 
 
 
-    def new_roll(self,num_dice):
+
+    def new_roll(self,num_dice) -> list:
+        """ method enables dice buttons and makes them not visible so that too many dice arent displayed
+
+
+        :param num_dice: an int to indicate num of dice being rolled.
+        :return: list of dice rolled
+        """
         self.dice1.setEnabled(True)
         self.dice2.setEnabled(True)
         self.dice3.setEnabled(True)
@@ -142,12 +144,21 @@ class Controller(QMainWindow, Ui_MainWindow):
 
         return self.dice_roll
 
-    def disable_bank_reset_submit_buttons(self):
+    def disable_bank_reset_submit_buttons(self) -> None:
+        """ method disables all the buttons
+
+        :return: None
+        """
         self.bank_button.setEnabled(False)
         self.reset_button.setEnabled(False)
         self.submit_button.setEnabled(False)
 
-    def lets_play(self):
+    def lets_play(self) -> None:
+        """
+        method sets the player count and initial dice roll is made visible while also
+        making scoll menue and num of players not visible
+        :return: none
+        """
         self.dice1.setVisible(True)
         self.dice2.setVisible(True)
         self.dice3.setVisible(True)
@@ -162,7 +173,13 @@ class Controller(QMainWindow, Ui_MainWindow):
         self.bank_button.setVisible(True)
         self.start_round()
 
-    def reset_dice(self):
+    def reset_dice(self) ->None:
+        """
+        method sets all the dice to enabled and resets score_list and temporary value for tracking
+        selected dice
+
+        :return: None
+        """
         self.dice1.setEnabled(True)
         self.dice2.setEnabled(True)
         self.dice3.setEnabled(True)
@@ -172,7 +189,11 @@ class Controller(QMainWindow, Ui_MainWindow):
         self.button_clicked_temp = 0
         self.score_list = []
 
-    def button_clicked(self):
+    def button_clicked(self) ->None:
+        """
+        method disabled selected dice and updates their value in score_list
+        :return: None
+        """
         button = self.sender()
         value = button.my_value
         button.setEnabled(False)
@@ -182,7 +203,12 @@ class Controller(QMainWindow, Ui_MainWindow):
         self.button_clicked_temp = self.point_check(self.score_list)
 
 
-    def submit_score(self):
+    def submit_score(self) -> None:
+        """
+        method does heavy lifting. processes logic for the game and iterates players
+        based on their count. if Farkles happen method pushes to next player.
+        :return: none
+        """
         #self.temp += self.point_check(self.dice_roll)
         self.players_list[self.player] = self.temp
         self.button_clicked_temp = 0
@@ -244,17 +270,30 @@ class Controller(QMainWindow, Ui_MainWindow):
             # self.place_holder = 0
             # self.score_list.clear()
 
-    def enable_dice(self):
+    def enable_dice(self) ->None:
+        """
+        method renables dice
+        :return: none
+        """
         for die in self.dice_list:
             die.setEnabled(True)
 
-    def enable_dice_buttons(self):
+    def enable_dice_buttons(self) ->None:
+        """
+        same as enable dice,but a button i was going to add. wont get rid of since
+        im afraid of break code at this point.
+        :return: None
+        """
         for button in self.dice_buttons:
             button.setEnabled(True)
 
 
 
-    def start_round(self):
+    def start_round(self) -> None:
+        """
+        method initializes header text and increments players as well as rolling new dice rolls
+        :return: None
+        """
         # Set up player header label and font
         font = QtGui.QFont("Arial", 24)
         self.player_header.setFont(font)
@@ -272,7 +311,12 @@ class Controller(QMainWindow, Ui_MainWindow):
         self.score_goal.setText(f"points {x}")
         self.player_header.setText(f"Player {self.player + 1}'s turn")
 
-    def display_dice(self, rand_int_list):
+    def display_dice(self, rand_int_list) -> list:
+        """
+        method sets the correct dice image to the random integer list
+        :param rand_int_list: list of random ints
+        :return: None
+        """
 
         for i in range(len(rand_int_list)):
             if rand_int_list[i] == 1:
@@ -296,7 +340,12 @@ class Controller(QMainWindow, Ui_MainWindow):
             self.dice_list[i].setIcon(icon)
             self.dice_list[i].my_value = rand_int_list[i]
 
-    def rand_int_list_generator(self, num_dice):
+    def rand_int_list_generator(self, num_dice) -> int:
+        """
+        method takes input of dice number and creates a rand list of that length
+        :param num_dice: num of dice
+        :return: list
+        """
         if num_dice == 6:
             d1 = random.randint(1,6)
             d2 = random.randint(1,6)
@@ -336,7 +385,12 @@ class Controller(QMainWindow, Ui_MainWindow):
             d1 = random.randint(1,6)
             self.rand_int_list = [d1]
         return self.rand_int_list
-    def one_hundreds(self,dice_roll):
+    def one_hundreds(self,dice_roll) ->list:
+        """
+        checks for ones in list for points
+        :param dice_roll: list of dice rolled
+        :return: ones points and True or False
+        """
         #dice_roll = self.rand_int_list
         one_score = 0
         has_one = False
@@ -350,7 +404,12 @@ class Controller(QMainWindow, Ui_MainWindow):
             return 0, False
 
 
-    def fifties(self,dice_roll):
+    def fifties(self,dice_roll) -> list:
+        """
+        method checks for 5's in list and assigns points
+        :param dice_roll: rand_int_list
+        :return: points of fives and True or False
+        """
         #dice_roll = self.rand_int_list
         fifty_score = 0
         has_fifty = False
@@ -363,7 +422,12 @@ class Controller(QMainWindow, Ui_MainWindow):
         else:
             return 0, False
 
-    def of_a_kind(self,dice_roll):
+    def of_a_kind(self,dice_roll)->list:
+        """
+        checks for rolls with 3 or more of the same type
+        :param dice_roll: rand_int_list
+        :return: points of kind and True or False
+        """
         #dice_roll = self.rand_int_list
         kind_dict = {}
         kind_score = 0
@@ -392,7 +456,12 @@ class Controller(QMainWindow, Ui_MainWindow):
         else:
             return 0, False
 
-    def straight(self,dice_roll):
+    def straight(self,dice_roll) ->list:
+        """
+        checks if the roll is a straight
+        :param dice_roll: rand_int_list
+        :return: points of straight and True or False
+        """
         #dice_roll = self.rand_int_list
         straight_score = 0
         straight_dict = {}
@@ -411,7 +480,12 @@ class Controller(QMainWindow, Ui_MainWindow):
         else:
             return 0, False
 
-    def three_pairs(self,dice_roll):
+    def three_pairs(self,dice_roll) ->list:
+        """
+        checks if there are three pairs in the list
+        :param dice_roll: rand_int_list
+        :return: points and True or False
+        """
         #dice_roll = self.rand_int_list
         three_pairs_score = 0
         three_pairs_dict = {}
@@ -430,7 +504,12 @@ class Controller(QMainWindow, Ui_MainWindow):
         else:
             return 0, False
 
-    def two_triplets(self,dice_roll):
+    def two_triplets(self,dice_roll) ->list:
+        """
+        method checks if there are two triplets
+        :param dice_roll: rand_int_list
+        :return: points and True or False
+        """
         #dice_roll = self.rand_int_list
         triplet_score = 0
         triplet_dict = {}
@@ -448,7 +527,12 @@ class Controller(QMainWindow, Ui_MainWindow):
         else:
             return 0, False
 
-    def four_plus_pair(self,dice_roll):
+    def four_plus_pair(self,dice_roll) ->list:
+        """
+        checks for four of a kind and a pair
+        :param dice_roll: rand_int_list
+        :return: points and True or False
+        """
         #dice_roll = self.rand_int_list
         four_pair_score = 0
         four_pair_dict = {}
@@ -464,7 +548,13 @@ class Controller(QMainWindow, Ui_MainWindow):
         else:
             return 0, False
 
-    def point_check(self,dice_roll):
+    def point_check(self,dice_roll) ->list:
+        """
+        takes logic from all point checking and puts it in one method. checks for true and false vaules
+        and for point values of each point processing function
+        :param dice_roll: rand_int_list
+        :return: point value
+        """
         points = 0
         #dice_roll = self.rand_int_list
         ones = self.one_hundreds(dice_roll)[0]
@@ -499,7 +589,13 @@ class Controller(QMainWindow, Ui_MainWindow):
             return points
         return points
 
-    def num_players_selected(self, index):
+    def num_players_selected(self, index)-> int:
+        """
+        creates a player list from dropdown menue. player list tracks position of player by index
+        and stores the player score.
+        :param index: int recieved from drop down menu
+        :return: None
+        """
         num_players = index
         if num_players == 1:
             self.player1_score_label.setVisible(True)
